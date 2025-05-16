@@ -6,66 +6,93 @@
   <style>
     body {
       font-family: sans-serif;
-      padding: 40px;
       background-color: #f9f9f9;
       color: #333;
+      margin: 0;
+      padding: 0;
     }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 8px;
+    }
+
     h1 {
       font-size: 28px;
       border-bottom: 1px solid #ccc;
       padding-bottom: 10px;
+      text-align: center;
     }
+
     .section {
       margin-top: 30px;
     }
+
     .notice {
       background: #fff3cd;
       border: 1px solid #ffeeba;
       padding: 15px;
-      margin-top: 10px;
       font-size: 14px;
+      margin-top: 20px;
+      border-radius: 5px;
     }
+
     .upload-box {
       border: 2px dashed #999;
       padding: 30px;
       text-align: center;
-      background-color: #fff;
+      background-color: #fafafa;
       margin-top: 15px;
+      border-radius: 6px;
+      transition: background-color 0.3s;
     }
+
     .upload-box:hover {
       background-color: #f0f0f0;
     }
+
     .note {
       font-size: 13px;
       color: #666;
-      margin-top: 5px;
+      margin-top: 8px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h1>明細書AIチェックツール</h1>
+  <div class="container">
+    <h1>明細書AIチェックツール</h1>
 
-  <div class="notice">
-    <strong>【注意事項】</strong><br>
-    本ツールは完璧なチェックを保証するものではありません。<br>
-    チェック結果は明細書の質を向上させるための情報としてご利用ください。<br>
-    図面や明細書中の画像（数式や写真等の画像）等はチェック対象外です。
-  </div>
-
-  <div class="section">
-    <h2>明細書のアップロード</h2>
-    <div class="upload-box">
-      ここに.docxファイルをドラッグ＆ドロップ、またはクリックして選択
-      <div class="note">【注：明細書はワード（.docx）形式でお願いします】</div>
+    <div class="notice">
+      <strong>【注意事項】</strong><br>
+      本ツールは完璧なチェックを保証するものではありません。<br>
+      チェック結果は明細書の質を向上させるための情報としてご利用ください。<br>
+      図面や明細書中の画像（数式や写真等の画像）等はチェック対象外です。
     </div>
-  </div>
 
-  <div class="section">
-    <h2>図面のアップロード</h2>
-    <div class="upload-box">
-      ここにPDFファイルをドラッグ＆ドロップ、またはクリックして選択
-      <div class="note">【注：図面はできればOCR化したPDF形式でお願いします】</div>
+    <div class="section">
+      <h2>明細書のアップロード</h2>
+      <div class="upload-box">
+        ここに.docxファイルをドラッグ＆ドロップ、またはクリックして選択
+        <div class="note">【注：明細書はワード（.docx）形式でお願いします】</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>図面のアップロード</h2>
+      <div class="upload-box">
+        ここにPDFファイルをドラッグ＆ドロップ、またはクリックして選択
+        <div class="note">【注：図面はできればOCR化したPDF形式でお願いします】</div>
+      </div>
     </div>
   </div>
 
