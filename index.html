@@ -134,14 +134,14 @@
       const docFile = document.getElementById("docFile").files[0];
       const pdfFile = document.getElementById("pdfFile").files[0];
 
-      if (!docFile && !pdfFile) {
-        alert("明細書または図面ファイルのいずれかを選択してください。");
+      if (!docFile || !pdfFile) {
+        alert("明細書（.docx）と図面（.pdf）の両方をアップロードしてください。");
         return;
       }
 
       const formData = new FormData();
-      if (docFile) formData.append("docFile", docFile);
-      if (pdfFile) formData.append("pdfFile", pdfFile);
+      formData.append("docFile", docFile);
+      formData.append("pdfFile", pdfFile);
 
       fetch(webhookURL, {
         method: "POST",
