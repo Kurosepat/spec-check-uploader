@@ -57,10 +57,16 @@
       margin-top: 15px;
       border-radius: 6px;
       transition: background-color 0.3s;
+      cursor: pointer;
     }
 
     .upload-box:hover {
       background-color: #f0f0f0;
+    }
+
+    .upload-box.dragover {
+      background-color: #e0e0ff;
+      border-color: #3366cc;
     }
 
     .note {
@@ -70,8 +76,7 @@
     }
 
     input[type="file"] {
-      display: block;
-      margin: 10px auto;
+      display: none;
     }
 
     button {
@@ -108,18 +113,20 @@
 
     <div class="section">
       <h2>明細書のアップロード</h2>
-      <div class="upload-box">
+      <label class="upload-box" id="docDrop">
+        ここに.docxファイルをドラッグ＆ドロップ<br>またはクリックして選択
         <input type="file" id="docFile" accept=".doc,.docx">
-        <div class="note">【注：明細書はワード（.docx）形式でお願いします】</div>
-      </div>
+        <div class="note" id="docFileName">【注：明細書はワード（.docx）形式でお願いします】</div>
+      </label>
     </div>
 
     <div class="section">
       <h2>図面のアップロード</h2>
-      <div class="upload-box">
+      <label class="upload-box" id="pdfDrop">
+        ここにPDFファイルをドラッグ＆ドロップ<br>またはクリックして選択
         <input type="file" id="pdfFile" accept=".pdf">
-        <div class="note">【注：図面はできればOCR化したPDF形式でお願いします】</div>
-      </div>
+        <div class="note" id="pdfFileName">【注：図面はできればOCR化したPDF形式でお願いします】</div>
+      </label>
     </div>
 
     <div class="section center">
@@ -129,6 +136,42 @@
 
   <script>
     const webhookURL = "https://hook.us2.make.com/drj19p9mvkxe7bbvsh1ogprr3lmm5qlq";
+
+    function handleDropArea(dropAreaId, fileInputId, fileNameId) {
+      const dropArea = document.getElementById(dropAreaId);
+      const fileInput = document.getElementById(fileInputId);
+      const fileNameDisplay = document.getElementById(fileNameId);
+
+      dropArea.addEventListener("click", () => fileInput.click());
+
+      dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+
+      dropArea.addEventListener("dragleave", () => {
+        dropArea.classList.remove("dragover");
+      });
+
+      dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          fileNameDisplay.innerText = `選択されたファイル: ${files[0].name}`;
+        }
+      });
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+          fileNameDisplay.innerText = `選択されたファイル: ${fileInput.files[0].name}`;
+        }
+      });
+    }
+
+    handleDropArea("docDrop", "docFile", "docFileName");
+    handleDropArea("pdfDrop", "pdfFile", "pdfFileName");
 
     function uploadBothFiles() {
       const docFile = document.getElementById("docFile").files[0];
