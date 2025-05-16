@@ -17,7 +17,7 @@
       margin: 40px auto;
       padding: 20px;
       background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
     }
 
@@ -49,22 +49,21 @@
       text-align: center;
     }
 
-    .upload-box {
+    .drop-area {
       border: 2px dashed #999;
       padding: 30px;
-      text-align: center;
       background-color: #fafafa;
-      margin-top: 15px;
       border-radius: 6px;
+      text-align: center;
       transition: background-color 0.3s;
       cursor: pointer;
     }
 
-    .upload-box:hover {
+    .drop-area:hover {
       background-color: #f0f0f0;
     }
 
-    .upload-box.dragover {
+    .drop-area.dragover {
       background-color: #e0e0ff;
       border-color: #3366cc;
     }
@@ -97,6 +96,12 @@
     .center {
       text-align: center;
     }
+
+    .filename {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -113,20 +118,16 @@
 
     <div class="section">
       <h2>明細書のアップロード</h2>
-      <label class="upload-box" id="docDrop">
-        ここに.docxファイルをドラッグ＆ドロップ<br>またはクリックして選択
-        <input type="file" id="docFile" accept=".doc,.docx">
-        <div class="note" id="docFileName">【注：明細書はワード（.docx）形式でお願いします】</div>
-      </label>
+      <div class="drop-area" id="docDrop">ここに.docxファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
+      <input type="file" id="docFile" accept=".doc,.docx">
+      <div class="note filename" id="docFileName">【注：明細書はワード（.docx）形式でお願いします】</div>
     </div>
 
     <div class="section">
       <h2>図面のアップロード</h2>
-      <label class="upload-box" id="pdfDrop">
-        ここにPDFファイルをドラッグ＆ドロップ<br>またはクリックして選択
-        <input type="file" id="pdfFile" accept=".pdf">
-        <div class="note" id="pdfFileName">【注：図面はできればOCR化したPDF形式でお願いします】</div>
-      </label>
+      <div class="drop-area" id="pdfDrop">ここにPDFファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
+      <input type="file" id="pdfFile" accept=".pdf">
+      <div class="note filename" id="pdfFileName">【注：図面はできればOCR化したPDF形式でお願いします】</div>
     </div>
 
     <div class="section center">
@@ -137,10 +138,10 @@
   <script>
     const webhookURL = "https://hook.us2.make.com/drj19p9mvkxe7bbvsh1ogprr3lmm5qlq";
 
-    function handleDropArea(dropAreaId, fileInputId, fileNameId) {
-      const dropArea = document.getElementById(dropAreaId);
-      const fileInput = document.getElementById(fileInputId);
-      const fileNameDisplay = document.getElementById(fileNameId);
+    function setupDropArea(dropId, inputId, labelId) {
+      const dropArea = document.getElementById(dropId);
+      const fileInput = document.getElementById(inputId);
+      const fileLabel = document.getElementById(labelId);
 
       dropArea.addEventListener("click", () => fileInput.click());
 
@@ -159,19 +160,19 @@
         const files = e.dataTransfer.files;
         if (files.length > 0) {
           fileInput.files = files;
-          fileNameDisplay.innerText = `選択されたファイル: ${files[0].name}`;
+          fileLabel.textContent = `選択されたファイル: ${files[0].name}`;
         }
       });
 
       fileInput.addEventListener("change", () => {
         if (fileInput.files.length > 0) {
-          fileNameDisplay.innerText = `選択されたファイル: ${fileInput.files[0].name}`;
+          fileLabel.textContent = `選択されたファイル: ${fileInput.files[0].name}`;
         }
       });
     }
 
-    handleDropArea("docDrop", "docFile", "docFileName");
-    handleDropArea("pdfDrop", "pdfFile", "pdfFileName");
+    setupDropArea("docDrop", "docFile", "docFileName");
+    setupDropArea("pdfDrop", "pdfFile", "pdfFileName");
 
     function uploadBothFiles() {
       const docFile = document.getElementById("docFile").files[0];
