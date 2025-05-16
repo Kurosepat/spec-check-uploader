@@ -75,9 +75,18 @@
     }
 
     button {
-      margin-top: 15px;
-      padding: 10px 20px;
+      margin-top: 20px;
+      padding: 10px 25px;
       font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
     }
 
     .center {
@@ -101,7 +110,6 @@
       <h2>明細書のアップロード</h2>
       <div class="upload-box">
         <input type="file" id="docFile" accept=".doc,.docx">
-        <button onclick="uploadFile('docFile')">送信する</button>
         <div class="note">【注：明細書はワード（.docx）形式でお願いします】</div>
       </div>
     </div>
@@ -110,26 +118,30 @@
       <h2>図面のアップロード</h2>
       <div class="upload-box">
         <input type="file" id="pdfFile" accept=".pdf">
-        <button onclick="uploadFile('pdfFile')">送信する</button>
         <div class="note">【注：図面はできればOCR化したPDF形式でお願いします】</div>
       </div>
+    </div>
+
+    <div class="section center">
+      <button onclick="uploadBothFiles()">AIチェックを開始します</button>
     </div>
   </div>
 
   <script>
     const webhookURL = "https://hook.us2.make.com/drj19p9mvkxe7bbvsh1ogprr3lmm5qlq";
 
-    function uploadFile(inputId) {
-      const fileInput = document.getElementById(inputId);
-      const file = fileInput.files[0];
+    function uploadBothFiles() {
+      const docFile = document.getElementById("docFile").files[0];
+      const pdfFile = document.getElementById("pdfFile").files[0];
 
-      if (!file) {
-        alert("ファイルを選択してください。");
+      if (!docFile && !pdfFile) {
+        alert("明細書または図面ファイルのいずれかを選択してください。");
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", file);
+      if (docFile) formData.append("docFile", docFile);
+      if (pdfFile) formData.append("pdfFile", pdfFile);
 
       fetch(webhookURL, {
         method: "POST",
@@ -137,7 +149,7 @@
       })
       .then(response => {
         if (response.ok) {
-          alert("ファイルを送信しました！");
+          alert("AIチェックを開始しました！");
         } else {
           alert("送信に失敗しました。");
         }
