@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <script src="https://cdn.skypack.dev/@octokit/rest"></script>
   <script>
     document.title = "明細書_特許請求の範囲_要約書AIチェックツール";
   </script>
@@ -97,12 +96,14 @@
     </div>
 
     <div class="section">
+      <h2>明細書のアップロード</h2>
       <div class="drop-area" id="docDrop">ここに明細書ファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
       <input type="file" id="docFile" accept=".doc,.docx">
       <div class="note filename" id="docFileName">【注：明細書はWordファイル(.docx)をそのままご利用いただけます】</div>
     </div>
 
     <div class="section">
+      <h2>図面のアップロード</h2>
       <div class="drop-area" id="pdfDrop">ここに図面ファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
       <input type="file" id="pdfFile" accept=".pdf">
       <div class="note filename" id="pdfFileName">【注：図面はPDF形式をご利用ください（OCR処理は不要）】</div>
@@ -115,11 +116,6 @@
 
   <script>
     const webhookURL = "https://hook.us2.make.com/xxxxxxxxxxxxxxxx";
-    const githubToken = "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    const owner = "Yasuniisan";
-    const repo = "patents";
-    const branch = "main";
-    const octokit = new Octokit({ auth: githubToken });
 
     function setupDropArea(dropId, inputId, labelId) {
       const dropArea = document.getElementById(dropId);
@@ -143,7 +139,6 @@
           fileLabel.textContent = `選択されたファイル: ${files[0].name}`;
         }
       });
-
       fileInput.addEventListener("change", () => {
         if (fileInput.files.length > 0) {
           fileLabel.textContent = `選択されたファイル: ${fileInput.files[0].name}`;
@@ -154,50 +149,31 @@
     setupDropArea("docDrop", "docFile", "docFileName");
     setupDropArea("pdfDrop", "pdfFile", "pdfFileName");
 
-    async function uploadToGitHub(file, path) {
-      const buffer = await file.arrayBuffer();
-      const base64Content = btoa(
-        new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-      );
-      await octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path,
-        message: `upload ${path}`,
-        content: base64Content,
-        branch
-      });
-      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
-    }
-
-    async function uploadBothFiles() {
+    function uploadBothFiles() {
       const docFile = document.getElementById("docFile").files[0];
       const pdfFile = document.getElementById("pdfFile").files[0];
       if (!docFile || !pdfFile) {
         alert("明細書（.docx）と図面（.pdf）の両方をアップロードしてください。");
         return;
       }
-      try {
-        const timestamp = Date.now();
-        const docPath = `docs/${timestamp}_${docFile.name}`;
-        const pdfPath = `drawings/${timestamp}_${pdfFile.name}`;
-        const docUrl = await uploadToGitHub(docFile, docPath);
-        const figUrl = await uploadToGitHub(pdfFile, pdfPath);
-        const payload = { docUrl, figUrl };
-        const res = await fetch(webhookURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+      const formData = new FormData();
+      formData.append("docFile", docFile);
+      formData.append("pdfFile", pdfFile);
+      fetch(webhookURL, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => {
         if (res.ok) {
           alert("AIチェックを開始しました！");
         } else {
           alert("Webhookへの送信に失敗しました。");
         }
-      } catch (err) {
+      })
+      .catch(err => {
         console.error(err);
         alert("エラーが発生しました。");
-      }
+      });
     }
   </script>
 </body>
