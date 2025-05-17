@@ -2,9 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <script src="https://cdn.skypack.dev/@octokit/rest"></script>
   <script>
-  document.title = "明細書_特許請求の範囲_要約書AIチェックツール";
-</script>
+    document.title = "明細書_特許請求の範囲_要約書AIチェックツール";
+  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -13,7 +14,6 @@
       margin: 0;
       padding: 0;
     }
-
     .container {
       max-width: 800px;
       margin: 40px auto;
@@ -22,24 +22,16 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
     }
-
     h1 {
       font-size: 28px;
       border-bottom: 1px solid #ccc;
       padding-bottom: 10px;
       text-align: center;
     }
-
     .section {
       margin-top: 30px;
-    }
-
-    .section h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
       text-align: center;
     }
-
     .notice {
       background: #fff3cd;
       border: 1px solid #ffeeba;
@@ -50,7 +42,6 @@
       max-width: 90%;
       text-align: center;
     }
-
     .drop-area {
       border: 2px dashed #999;
       padding: 30px;
@@ -60,26 +51,21 @@
       transition: background-color 0.3s;
       cursor: pointer;
     }
-
     .drop-area:hover {
       background-color: #f0f0f0;
     }
-
     .drop-area.dragover {
       background-color: #e0e0ff;
       border-color: #3366cc;
     }
-
     .note {
       font-size: 13px;
       color: #666;
       margin-top: 8px;
     }
-
     input[type="file"] {
       display: none;
     }
-
     button {
       margin-top: 20px;
       padding: 10px 25px;
@@ -90,15 +76,9 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
-    .center {
-      text-align: center;
-    }
-
     .filename {
       margin-top: 10px;
       font-size: 14px;
@@ -107,10 +87,8 @@
   </style>
 </head>
 <body>
-
   <div class="container">
     <h1>明細書AIチェックツール</h1>
-
     <div class="notice">
       <strong>【注意事項】</strong><br>
       本ツールは完璧なチェックを保証するものではありません。<br>
@@ -119,26 +97,29 @@
     </div>
 
     <div class="section">
-      <h2>明細書のアップロード</h2>
       <div class="drop-area" id="docDrop">ここに明細書ファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
       <input type="file" id="docFile" accept=".doc,.docx">
       <div class="note filename" id="docFileName">【注：明細書はWordファイル(.docx)をそのままご利用いただけます】</div>
     </div>
 
     <div class="section">
-      <h2>図面のアップロード</h2>
       <div class="drop-area" id="pdfDrop">ここに図面ファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
       <input type="file" id="pdfFile" accept=".pdf">
-      <div class="note filename" id="pdfFileName">【注：図面はFPF形式をご利用ください（OCR処理は不要）】</div>
+      <div class="note filename" id="pdfFileName">【注：図面はPDF形式をご利用ください（OCR処理は不要）】</div>
     </div>
 
-    <div class="section center">
+    <div class="section">
       <button onclick="uploadBothFiles()">AIチェックを開始します</button>
     </div>
   </div>
 
   <script>
-    const webhookURL = "https://hook.us2.make.com/drj19p9mvkxe7bbvsh1ogprr3lmm5qlq";
+    const webhookURL = "https://hook.us2.make.com/xxxxxxxxxxxxxxxx";
+    const githubToken = "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    const owner = "Yasuniisan";
+    const repo = "patents";
+    const branch = "main";
+    const octokit = new Octokit({ auth: githubToken });
 
     function setupDropArea(dropId, inputId, labelId) {
       const dropArea = document.getElementById(dropId);
@@ -146,16 +127,13 @@
       const fileLabel = document.getElementById(labelId);
 
       dropArea.addEventListener("click", () => fileInput.click());
-
       dropArea.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropArea.classList.add("dragover");
       });
-
       dropArea.addEventListener("dragleave", () => {
         dropArea.classList.remove("dragover");
       });
-
       dropArea.addEventListener("drop", (e) => {
         e.preventDefault();
         dropArea.classList.remove("dragover");
@@ -176,36 +154,51 @@
     setupDropArea("docDrop", "docFile", "docFileName");
     setupDropArea("pdfDrop", "pdfFile", "pdfFileName");
 
-    function uploadBothFiles() {
+    async function uploadToGitHub(file, path) {
+      const buffer = await file.arrayBuffer();
+      const base64Content = btoa(
+        new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      );
+      await octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path,
+        message: `upload ${path}`,
+        content: base64Content,
+        branch
+      });
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+    }
+
+    async function uploadBothFiles() {
       const docFile = document.getElementById("docFile").files[0];
       const pdfFile = document.getElementById("pdfFile").files[0];
-
       if (!docFile || !pdfFile) {
         alert("明細書（.docx）と図面（.pdf）の両方をアップロードしてください。");
         return;
       }
-
-      const formData = new FormData();
-      formData.append("docFile", docFile);
-      formData.append("pdfFile", pdfFile);
-
-      fetch(webhookURL, {
-        method: "POST",
-        body: formData,
-      })
-      .then(response => {
-        if (response.ok) {
+      try {
+        const timestamp = Date.now();
+        const docPath = `docs/${timestamp}_${docFile.name}`;
+        const pdfPath = `drawings/${timestamp}_${pdfFile.name}`;
+        const docUrl = await uploadToGitHub(docFile, docPath);
+        const figUrl = await uploadToGitHub(pdfFile, pdfPath);
+        const payload = { docUrl, figUrl };
+        const res = await fetch(webhookURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
           alert("AIチェックを開始しました！");
         } else {
-          alert("送信に失敗しました。");
+          alert("Webhookへの送信に失敗しました。");
         }
-      })
-      .catch(error => {
-        console.error("送信エラー:", error);
-        alert("通信エラーが発生しました。");
-      });
+      } catch (err) {
+        console.error(err);
+        alert("エラーが発生しました。");
+      }
     }
   </script>
-
 </body>
 </html>
